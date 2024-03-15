@@ -29,9 +29,56 @@ size_t Size(void* ptr)
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
-void mergeSort(int pData[], int l, int r)
-{
+void mergeSort(int pData[], int l, int r) {
+    if (l < r) {
+        // Same as (l+r)/2, but avoids overflow for large l and r
+        int m = l + (r - l) / 2;
+
+        // Sort first and second halves
+        mergeSort(pData, l, m);
+        mergeSort(pData, m + 1, r);
+
+        // Allocate memory for temporary arrays
+        int *L = (int *)Alloc((m - l + 1) * sizeof(int));
+        int *R = (int *)Alloc((r - m) * sizeof(int));
+
+        // Copy data to temporary arrays L[] and R[]
+        memcpy(L, pData + l, (m - l + 1) * sizeof(int));
+        memcpy(R, pData + m + 1, (r - m) * sizeof(int));
+
+        // Merge the temporary arrays back into pData[l..r]
+        int i = 0, j = 0, k = l;
+        while (i < (m - l + 1) && j < (r - m)) {
+            if (L[i] <= R[j]) {
+                pData[k] = L[i];
+                i++;
+            } else {
+                pData[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+
+        // Copy the remaining elements of L[], if there are any
+        while (i < (m - l + 1)) {
+            pData[k] = L[i];
+            i++;
+            k++;
+        }
+
+        // Copy the remaining elements of R[], if there are any
+        while (j < (r - m)) {
+            pData[k] = R[j];
+            j++;
+            k++;
+        }
+
+        // Deallocate memory for temporary arrays
+        DeAlloc(L);
+        DeAlloc(R);
+    }
 }
+
 
 // parses input file to an integer array
 int parseData(char *inputFileName, int **ppData)
@@ -69,18 +116,27 @@ void printArray(int pData[], int dataSz)
 {
 	int i, sz = dataSz - 100;
 	printf("\tData:\n\t");
-	for (i=0;i<100;++i)
-	{
-		printf("%d ",pData[i]);
+	if(dataSz>100){
+		for (i=0;i<100;++i)
+		{
+			printf("%d ",pData[i]);
+		}
+		printf("\n\t");
+		
+		for (i=sz;i<dataSz;++i)
+		{
+			printf("%d ",pData[i]);
+		}
+		
 	}
-	printf("\n\t");
+	else {
+		for (int j=0; j<dataSz; j++){
+			printf("%d ", pData[j]);
+		}
 	
-	for (i=sz;i<dataSz;++i)
-	{
-		printf("%d ",pData[i]);
 	}
 	printf("\n\n");
-}
+}	
 
 int main(void)
 {
